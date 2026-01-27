@@ -1,0 +1,55 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+
+/* =========================
+   Design Tokens (CSS vars)
+   ========================= */
+:root {
+
+  /* Use HSL channels so Tailwind can do /alpha-value */
+  --bg: 0 0% 100%;
+  --fg: 222.2 84% 4.9%;
+  --card: 0 0% 100%;
+  --card-fg: 222.2 84% 4.9%;
+  --muted: 210 40% 96.1%;
+  --muted-fg: 215.4 16.3% 46.9%;
+  --border: 214.3 31.8% 91.4%;
+  --primary: 221.2 83.2% 53.3%;
+  --primary-fg: 210 40% 98%;
+  --danger: 0 84.2% 60.2%;
+  --danger-fg: 210 40% 98%;
+  --ring: 221.2 83.2% 53.3%;
+  --radius: 14px;
+
+}
+
+.dark {
+  --bg: 222.2 84% 4.9%;
+  --fg: 210 40% 98%;
+  --card: 222.2 84% 6.9%;
+  --card-fg: 210 40% 98%;
+  --muted: 217.2 32.6% 17.5%;
+  --muted-fg: 215 20.2% 65.1%;
+  --border: 217.2 32.6% 17.5%;
+  --primary: 221.2 83.2% 53.3%;
+  --primary-fg: 210 40% 98%;
+  --danger: 0 62.8% 50.6%;
+  --danger-fg: 210 40% 98%;
+  --ring: 221.2 83.2% 53.3%;
+
+}
+
+@layer base {
+  html {
+    height: 100%;
+  }
+
+  body {
+    min-height: 100%;
+  }
+
+
+}
