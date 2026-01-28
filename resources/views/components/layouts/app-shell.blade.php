@@ -51,6 +51,7 @@
         </button>
       </div>
     </x-ui.modal>
+    @stack('scripts')
   </body>
 
 </html>

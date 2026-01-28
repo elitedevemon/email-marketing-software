@@ -17,3 +17,18 @@
 
 ## [Hotfix] - Blade component path
 - Fixed <x-layouts.app-shell> resolution by adding resources/views/components/layouts/app-shell.blade.php
+
+
+## [Step 2] - Categories CRUD (AJAX + modal-first)
+- Added categories table migration + Category model
+- Added /app/categories page (premium table shell)
+- Added AJAX endpoints: list/create/update/delete (JSON)
+- Added categories.js: debounce search, skeleton loading, modal create/edit, inline validation, toasts
+- Updated sidebar: Categories link enabled
+
+## [Step 3] - Clients CRUD v1 + Tags + Notes
+- Added clients table (soft delete) + tags + client_tag pivot + client_notes
+- Added /app/clients page (premium table shell) with filters (status/category/tag) + pagination
+- Added AJAX endpoints for clients CRUD
+- Added Notes modal: list notes + add note (AJAX)
+- Enabled sidebar Clients link

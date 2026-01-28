@@ -1,8 +1,8 @@
 @php
   $items = [
       ['label' => 'Dashboard', 'href' => route('app.dashboard')],
-      ['label' => 'Clients', 'href' => '#', 'soon' => true],
-      ['label' => 'Categories', 'href' => '#', 'soon' => true],
+      ['label' => 'Clients', 'href' => route('app.clients.index')],
+      ['label' => 'Categories', 'href' => route('app.categories.index')],
       ['label' => 'Senders', 'href' => '#', 'soon' => true],
       ['label' => 'Templates', 'href' => '#', 'soon' => true],
       ['label' => 'Sequences', 'href' => '#', 'soon' => true],
@@ -31,7 +31,14 @@
     <ul class="space-y-1">
       @foreach ($items as $item)
         @php
-          $isActive = $item['href'] !== '#' && url()->current() === $item['href'];
+          $isActive = false;
+          if ($item['label'] === 'Dashboard') {
+              $isActive = request()->routeIs('app.dashboard');
+          }
+          if ($item['label'] === 'Clients') $isActive = request()->routeIs('app.clients.*');
+          if ($item['label'] === 'Categories') {
+              $isActive = request()->routeIs('app.categories.*');
+          }
           $base = 'flex items-center gap-3 rounded-xl px-3 py-2.5 transition';
           $active = 'bg-muted/60 text-fg';
           $idle = 'hover:bg-muted/40 text-fg/90';

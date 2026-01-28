@@ -4,7 +4,9 @@
 - Step 0 completed: Blueprint + architecture plan frozen.
 - Step 1 completed: Breeze (Blade) auth + SaaS-grade App Shell + Vanilla JS UI utilities + RBAC foundation (Spatie).
 - Hotfix applied: app-shell Blade component placed under resources/views/components/layouts to match <x-layouts.app-shell>.
-- Next: Proceed Step 2 (Categories CRUD: AJAX + modal-first).
+- Step 2 completed: Categories CRUD (AJAX list/search/filter/pagination + modal create/edit + delete).
+- Step 3 completed: Clients CRUD v1 (AJAX) + Tags (pivot) + Notes (AJAX modal).
+- Next: Proceed Step 4 (Competitors per client).
 
 ## Non‑negotiable tech rules (must comply)
 - Laravel 11 + Blade + Tailwind + Vanilla JS (fetch/XHR). No Vue/React/Livewire/Alpine/Inertia.
