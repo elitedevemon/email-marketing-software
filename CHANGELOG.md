@@ -50,3 +50,15 @@
 - Added database queue tables: jobs, failed_jobs, job_batches
 - Added Failed Jobs UI: /app/queue/failed with view + retry + forget (admin-only actions)
 - Updated sidebar + quick actions to link Senders and Queue
+
+## [Hotfix] - Scrollable modals
+- Updated <x-ui.modal> to use max-height + scrollable body (no more zooming out).
+
+
+## [Step 6] - Sequence engine v1 + Secure cron trigger
+- Added sequences/steps/enrollments tables (minimal sequence system)
+- Added email_outbounds (idempotent outbox per enrollment+step)
+- Added sequence:tick command and scheduled it every minute via routes/console.php
+- Added SendOutboundEmailJob (dynamic SMTP per sender)
+- Added /cron/run endpoint with token auth + throttle + lock + cron_runs logging
+- Auto-enroll new prospect clients into default_outreach sequence (seeded)

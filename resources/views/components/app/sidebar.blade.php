@@ -7,6 +7,7 @@
       ['label' => 'Templates', 'href' => '#', 'soon' => true],
       ['label' => 'Sequences', 'href' => '#', 'soon' => true],
       ['label' => 'Inbox', 'href' => '#', 'soon' => true],
+      ['label' => 'Queue', 'href' => route('app.queue.failed')],
       ['label' => 'Reports', 'href' => '#', 'soon' => true],
       ['label' => 'Control Center', 'href' => '#', 'soon' => true],
   ];

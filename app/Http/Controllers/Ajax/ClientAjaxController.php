@@ -9,6 +9,7 @@ use App\Models\Tag;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use App\Services\SequenceEngine;
 
 class ClientAjaxController extends Controller
 {
@@ -113,6 +114,13 @@ class ClientAjaxController extends Controller
     ]);
 
     $this->syncTags($client, $validated['tags'] ?? '');
+
+    // Auto-enroll into default sequence (best-effort; does not block client creation)
+    try {
+      app(SequenceEngine::class)->enrollDefaultForClient($client);
+    } catch (\Throwable $e) {
+      logger()->warning('Default sequence enrollment failed: ' . $e->getMessage());
+    }
 
     return response()->json([
       'ok' => true,

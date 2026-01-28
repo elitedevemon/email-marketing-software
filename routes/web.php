@@ -12,10 +12,16 @@ use App\Http\Controllers\App\SenderController;
 use App\Http\Controllers\App\FailedJobsController;
 use App\Http\Controllers\Ajax\SenderAjaxController;
 use App\Http\Controllers\Ajax\FailedJobsAjaxController;
+use App\Http\Controllers\Cron\CronRunController;
 
 Route::get('/', function () {
   return view('welcome');
 });
+
+// Secure cron trigger (external cron websites)
+Route::get('/cron/run', [CronRunController::class, 'run'])
+  ->middleware(['cron.token', 'throttle:10,10'])
+  ->name('cron.run');
 
 // Keep /dashboard for compatibility; redirect into the SaaS shell.
 Route::get('/dashboard', function () {

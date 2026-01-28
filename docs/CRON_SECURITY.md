@@ -3,7 +3,27 @@
 This app will run scheduled sending/automation jobs via Laravel 11 scheduler (`routes/console.php`)
 but in production many users run it using an external cron website / uptime service.
 
-This document defines the security requirements before we ship the cron endpoint.
+This document defines the security requirements and the **implemented cron endpoint**.
+
+## Implemented endpoint (Step 6)
+**GET `/cron/run`**
+- Triggers: `php artisan schedule:run` (which runs `sequence:tick` every minute)
+- Auth:
+  - Preferred header: `Authorization: Bearer <CRON_TOKEN>`
+  - Fallback query: `/cron/run?token=<CRON_TOKEN>`
+- Rate limit: `throttle:10,10` (10 requests / 10 minutes)
+- Lock: cache lock `cron:schedule-run` TTL 600s to avoid double-run
+- Logging: DB table `cron_runs` stores status, duration, IP, user-agent, and output
+
+### Response
+Success:
+```json
+{ "ok": true, "message": "Schedule executed.", "data": { "cron_run_id": 12, "duration_ms": 220 } }
+```
+Lock busy:
+```json
+{ "ok": false, "message": "Cron is already running." }
+```
 
 ## Threat model (what we prevent)
 - Public discovery of the cron URL (mass triggering / DoS)
@@ -20,6 +40,12 @@ This document defines the security requirements before we ship the cron endpoint
 - Fallback support: query string `?token=` only if required by the cron provider.
 
 **Never** log the token. If query token is used, avoid logging full URLs.
+
+### Environment variables
+- `CRON_TOKEN` (required)
+- Recommended optional:
+  - `DEFAULT_SEQUENCE_KEY=default_outreach`
+  - `EMAIL_SENDING_ENABLED=true`
 
 ### 2) Rate limiting
 - Protect the endpoint with strict limiter.

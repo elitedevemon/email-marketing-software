@@ -38,6 +38,18 @@ so future steps remain consistent and production-safe.
   - `daily_limit` integer
   - `window_start/window_end` time (timezone-aware via `timezone` column)
   - jitter range in seconds (`jitter_min_seconds`..`jitter_max_seconds`)
+  
+## Sequences v1
+- Default sequence key: `DEFAULT_SEQUENCE_KEY=default_outreach`
+- New clients auto-enroll only when `clients.status === 'prospect'`.
+- Enrollment delay timing:
+  - next email time is computed from **sent_at + next_step.delay_days**
+- Idempotency:
+  - one outbound per enrollment+step enforced via unique DB index.
+- Backoff:
+  - if no sender available, enrollment next_run_at is pushed by 5 minutes.
+  - after queuing a send job, next_run_at is pushed by 10 minutes while the job runs.
+
 
 ### Competitors
 - Competitors are stored per client (0..n), currently **hard-deleted**.

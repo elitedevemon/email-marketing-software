@@ -36,6 +36,11 @@ third-party marketing APIs. Deliverability is **not guaranteed**, but we impleme
   - Per-sender daily limit
   - Sending window + jitter
 - Credentials are stored encrypted at rest (password fields).
+
+## SMTP notes (practical)
+- Prefer provider “app passwords” where required (e.g., Gmail).
+- Keep the same From domain per sender to build reputation.
+- Start low daily limits and ramp gradually.
 - Per-sender daily limit (configurable)
 - Sending windows (avoid 24/7 blasting)
 - Random jitter to reduce bursty patterns

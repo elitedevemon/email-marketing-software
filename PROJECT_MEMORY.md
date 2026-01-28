@@ -9,7 +9,9 @@
 - Step 4 completed: Competitors per client (AJAX CRUD via Clients page modal) + insights_json baseline.
 - Hotfix docs hygiene: Added ASSUMPTIONS.md + docs/CRON_SECURITY.md + docs/DELIVERABILITY.md to capture baselines.
 - Step 5 completed: Sender accounts CRUD (SMTP+optional IMAP, encrypted secrets, limits/windows) + database queue tables + Failed Jobs UI.
-- Next: Proceed Step 6 (Sequence engine v1: schedules + due sends + idempotency + secure cron trigger).
+- Hotfix UI: Made <x-ui.modal> scrollable (max-height + overflow-y-auto body).
+- Step 6 completed: Sequence engine v1 (sequences/steps/enrollments + outbox + send job) + secure cron endpoint (/cron/run) + scheduler wiring.
+- Next: Proceed Step 7 (Unsubscribe + suppression enforcement + tracking scaffolding: open/click events tables).
 
 ## Non‑negotiable tech rules (must comply)
 - Laravel 11 + Blade + Tailwind + Vanilla JS (fetch/XHR). No Vue/React/Livewire/Alpine/Inertia.
