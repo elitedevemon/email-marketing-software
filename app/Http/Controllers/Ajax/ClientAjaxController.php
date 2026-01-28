@@ -21,7 +21,7 @@ class ClientAjaxController extends Controller
 
     $query = Client::query()
       ->with(['category:id,name', 'tags:id,name'])
-      ->withCount('notes');
+      ->withCount(['notes', 'competitors']);
 
     if ($q !== '') {
       $like = '%' . addcslashes($q, '%_') . '%';
@@ -72,6 +72,7 @@ class ClientAjaxController extends Controller
             'category' => $c->category ? ['id' => $c->category->id, 'name' => $c->category->name] : null,
             'tags' => $c->tags->map(fn($t) => $t->name)->values(),
             'notes_count' => (int) $c->notes_count,
+            'competitors_count' => (int) $c->competitors_count,
             'created_at' => optional($c->created_at)->toISOString(),
           ];
         })->values(),

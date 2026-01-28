@@ -1,34 +1,60 @@
-# Deliverability & Compliance Guide (Ethical)
+# Deliverability & Compliance Guidelines
 
-## Non-negotiables
-- Always include unsubscribe link (global suppression).
-- Respect suppression list everywhere (no sending).
-- Use honest identity footer (company name/address/contact).
+This app is a self-hosted email marketing + proposal automation tool. We do not use any
+third-party marketing APIs. Deliverability is **not guaranteed**, but we implement best practices.
 
-## SPF / DKIM / DMARC (minimum guidance)
-1) SPF
-- Add TXT record for your sending domain to authorize your SMTP IP/provider.
-- Keep it under DNS lookup limits; avoid multiple nested includes.
+## Non-negotiables (ethics + compliance)
+- Unsubscribe must exist and be honored globally (suppression list).
+- No “spam bypass tricks”.
+- Honest identity + footer + physical/business address placeholders.
+- Consent-based sending is strongly recommended.
 
-2) DKIM
-- Generate DKIM keys from your mail server/provider.
-- Publish DKIM public key as TXT record.
-- Ensure From domain aligns with DKIM signing domain if possible (alignment helps DMARC).
+## DNS configuration (SPF / DKIM / DMARC)
 
-3) DMARC
+### SPF
+- Add/extend SPF to authorize your sending server(s).
+- Example (conceptual):
+  - `v=spf1 ip4:<YOUR_SERVER_IP> include:<YOUR_MX_OR_PROVIDER> -all`
+
+### DKIM
+- Enable DKIM signing for each sending domain.
+- Publish the DKIM public key in DNS (selector-based).
+- Rotate selectors periodically.
+
+### DMARC
 - Start with monitoring:
-  - p=none; rua=mailto:...
-- Then gradually enforce:
-  - p=quarantine -> p=reject (when confident)
-- Ensure SPF or DKIM passes with alignment to pass DMARC.
+  - `p=none; rua=mailto:<report@domain>; adkim=s; aspf=s`
+- Move gradually to enforcement when stable:
+  - `p=quarantine` then `p=reject`
 
-## Sending hygiene
-- Start slow (warm-up). Increase gradually.
-- Use sending window + random jitter.
-- Domain throttling (gmail/yahoo/outlook) and backoff on temp failures.
-- Keep content relevant; avoid spammy patterns.
-- Always send a plain-text alternative.
+> We will include a UI checklist later (per sender/domain) to confirm DNS is configured.
 
-## Reality check
-- Open tracking can be blocked (Apple MPP, image blocking).
-- Inbox placement is never guaranteed; we focus on best practices only.
+## Sending behavior (planned implementation)
+- Per-sender daily limit (configurable)
+- Sending windows (avoid 24/7 blasting)
+- Random jitter to reduce bursty patterns
+- Provider/domain throttling (gmail/yahoo/outlook) + backoff retries
+- Warm-up plan support (optional config)
+
+## List hygiene
+- Hard bounces must be suppressed immediately.
+- Complaints (if detectable) should be treated as suppression.
+- Replies should mark client as “Engaged” and stop sequences.
+- Avoid repeatedly emailing unopened recipients (stop rules) — configurable.
+
+## Tracking limitations (honesty)
+- Open tracking uses a pixel and is not 100% accurate:
+  - image blocking, privacy proxies, and prefetching can cause false negatives/positives.
+- Click tracking via redirect is generally more reliable but still limited by client behavior.
+- Inbox placement depends on domain reputation, content, and recipient behavior.
+
+## Content best practices (practical)
+- Keep subject lines honest and specific.
+- Avoid spammy phrasing and excessive punctuation.
+- Use consistent from-name and from-address.
+- Prefer plain text readability + light HTML.
+- Include clear CTA, but avoid aggressive urgency patterns.
+
+## Status (as of now)
+Deliverability controls are **partially documented** here; the actual sending/rotation/throttle engine
+will be implemented starting Step 5+.

@@ -1,11 +1,55 @@
-# Assumptions (to avoid blocking progress)
+# ASSUMPTIONS
 
-1) Single-tenant app (your internal SaaS usage) with multi-user roles (admin/operator).
-2) MySQL 8.0+ and PHP 8.3+ are available.
-3) Server can enable PHP ext-imap (needed for IMAP inbound fetch).
-4) Client primary identifier for outreach is email (we may enforce unique email per client; can relax later).
-5) Timezone: Asia/Dhaka (used for sending windows + scheduling).
-6) Categories are created by you manually (no seeded/prebuilt categories).
-7) Open tracking is best-effort; privacy tools may block. We still log opens when possible.
-8) We will not use any marketing automation APIs; only SMTP/IMAP protocols.
-9) Queue worker will be run via Supervisor/systemd in production (documented later).
+This file captures explicit defaults and implicit behaviors introduced during implementation,
+so future steps remain consistent and production-safe.
+
+## Product-level defaults
+- Primary UI flow is **modal-first** and **AJAX-first** (no Livewire/Alpine/Inertia).
+- Pagination default: **20 rows per page** for list endpoints (categories, clients).
+- All AJAX endpoints return JSON with `{ ok: boolean, message?: string, data?: any, errors?: object }`.
+
+## Data model assumptions (current)
+
+### Clients
+- `clients.status` is an enum-like string restricted to:
+  - `prospect | engaged | paused | suppressed | archived`
+- `clients.email` is unique and normalized to **lowercase** on create/update.
+- `clients` are **soft-deleted** (we keep history and allow future restore workflow).
+
+### Tags
+- Tag input is a **comma-separated string** on the client modal.
+- Tags are normalized to **lowercase**, trimmed, unique.
+- Max tags per client enforced in controller: **20** (to avoid abuse/UX issues).
+- Tags are stored globally in `tags` and connected via `client_tag` pivot.
+
+### Categories
+- Categories are user-managed (no pre-built auto-selection).
+- `categories` are currently **hard-deleted** (can be changed later if we need auditability).
+
+### Competitors
+- Competitors are stored per client (0..n), currently **hard-deleted**.
+- `competitors.insights_json` baseline structure (manual capture for now):
+  - `summary` (string)
+  - `notes` (string)
+  - `source` (string; default `manual`)
+  - `captured_at` (ISO string)
+
+## UI/UX assumptions
+- Tables use a “premium feel” pattern:
+  - search debounce (250–300ms)
+  - skeleton loading rows
+  - row actions via `details/summary` menu
+  - inline validation messages below fields
+- Toast system is available via `window.App.toast(message, type)`.
+- Fetch wrapper is available via `window.App.fetchJson(url, {method, body})`.
+
+## Security assumptions
+- All `/app/*` routes are behind `auth`, `verified`, and `role:admin|operator`.
+- We do not yet implement IP allowlists; will be considered for cron endpoint later.
+
+## Not implemented yet (planned)
+- Secure scheduler endpoint + logs
+- Sender accounts (SMTP/IMAP) with encrypted secrets
+- Suppression list + unsubscribe enforcement
+- Queue dashboard + failed jobs UI
+- Tracking (open/click/reply/bounce via IMAP) + automation engine

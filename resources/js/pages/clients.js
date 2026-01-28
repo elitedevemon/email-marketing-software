@@ -31,6 +31,19 @@ const els = {
   noteBody: document.getElementById('noteBody'),
   noteErr: document.getElementById('noteErr'),
   noteSave: document.getElementById('noteSave'),
+
+  // competitors
+  compClientId: document.getElementById('compClientId'),
+  compId: document.getElementById('compId'),
+  compHeader: document.getElementById('compHeader'),
+  compList: document.getElementById('compList'),
+  compForm: document.getElementById('compForm'),
+  compName: document.getElementById('compName'),
+  compWebsite: document.getElementById('compWebsite'),
+  compSummary: document.getElementById('compSummary'),
+  compNotes: document.getElementById('compNotes'),
+  compSave: document.getElementById('compSave'),
+  compReset: document.getElementById('compReset'),
 };
 
 if (!els.tbody) {
@@ -102,6 +115,7 @@ function renderSkeleton() {
       <td class="px-4 py-4"><div class="h-4 w-20 bg-muted/60 rounded"></div></td>
       <td class="px-4 py-4"><div class="h-4 w-32 bg-muted/60 rounded"></div></td>
       <td class="px-4 py-4"><div class="h-4 w-10 bg-muted/60 rounded"></div></td>
+      <td class="px-4 py-4"><div class="h-4 w-10 bg-muted/60 rounded"></div></td>
       <td class="px-4 py-4 text-right"><div class="h-8 w-16 bg-muted/60 rounded-xl inline-block"></div></td>
     </tr>
   `).join('');
@@ -149,6 +163,7 @@ function renderRows(rows, pagination) {
           <td class="px-4 py-3 text-muted-fg">${escHtml(cat)}</td>
           <td class="px-4 py-3">${badgeStatus(r.status)}</td>
           <td class="px-4 py-3">${tags || '<span class="text-xs text-muted-fg">—</span>'}</td>
+          <td class="px-4 py-3 text-muted-fg">${escHtml(r.competitors_count ?? 0)}</td>
           <td class="px-4 py-3 text-muted-fg">${escHtml(r.notes_count ?? 0)}</td>
           <td class="px-4 py-3 text-right">
             <details class="inline-block relative">
@@ -158,6 +173,8 @@ function renderRows(rows, pagination) {
               <div class="absolute right-0 mt-2 w-44 rounded-2xl border border-border bg-card shadow-xl overflow-hidden z-10">
                 <button type="button" data-action="edit" data-id="${escHtml(r.id)}"
                   class="w-full text-left px-3 py-2 text-sm hover:bg-muted/40 transition">Edit</button>
+                <button type="button" data-action="competitors" data-id="${escHtml(r.id)}"
+                  class="w-full text-left px-3 py-2 text-sm hover:bg-muted/40 transition">Competitors</button>
                 <button type="button" data-action="notes" data-id="${escHtml(r.id)}"
                   class="w-full text-left px-3 py-2 text-sm hover:bg-muted/40 transition">Notes</button>
                 <button type="button" data-action="delete" data-id="${escHtml(r.id)}"
@@ -340,6 +357,157 @@ async function addNote(clientId) {
   await load();
 }
 
+// Competitors
+function compClearErrors() {
+  document.querySelectorAll('[data-comp-err]').forEach((el) => {
+    el.classList.add('hidden');
+    el.textContent = '';
+  });
+  [els.compName, els.compWebsite, els.compSummary, els.compNotes].forEach((el) => {
+    el?.classList.remove('border-danger/60');
+  });
+}
+
+function compApplyErrors(errors) {
+  compClearErrors();
+  Object.entries(errors || {}).forEach(([field, msgs]) => {
+    const el = document.querySelector(`[data-comp-err="${field}"]`);
+    if (el) {
+      el.textContent = (msgs || []).join(' ');
+      el.classList.remove('hidden');
+    }
+    if (field === 'name') els.compName.classList.add('border-danger/60');
+    if (field === 'website_url') els.compWebsite.classList.add('border-danger/60');
+    if (field === 'summary') els.compSummary.classList.add('border-danger/60');
+    if (field === 'notes') els.compNotes.classList.add('border-danger/60');
+  });
+}
+
+function compResetForm() {
+  compClearErrors();
+  els.compId.value = '';
+  els.compName.value = '';
+  els.compWebsite.value = '';
+  els.compSummary.value = '';
+  els.compNotes.value = '';
+}
+
+function compFillForm(row) {
+  compClearErrors();
+  els.compId.value = String(row.id);
+  els.compName.value = row.name ?? '';
+  els.compWebsite.value = row.website_url ?? '';
+  els.compSummary.value = row.summary ?? '';
+  els.compNotes.value = row.notes ?? '';
+}
+
+function compSetSaving(s) {
+  els.compSave.disabled = s;
+  els.compSave.classList.toggle('opacity-70', s);
+  els.compSave.textContent = s ? 'Saving…' : 'Save competitor';
+}
+
+function compRenderSkeleton() {
+  els.compList.innerHTML = Array.from({ length: 3 }).map(() => `
+    <div class="rounded-xl border border-border/60 bg-card/60 p-3">
+      <div class="h-4 w-40 bg-muted/60 rounded"></div>
+      <div class="h-4 w-64 bg-muted/60 rounded mt-2"></div>
+      <div class="h-8 w-28 bg-muted/60 rounded-xl mt-3"></div>
+    </div>
+  `).join('');
+}
+
+function compRenderList(rows) {
+  if (!rows.length) {
+    els.compList.innerHTML = `<div class="text-sm text-muted-fg">No competitors yet. Add one below.</div>`;
+    return;
+  }
+
+  els.compList.innerHTML = rows.map((r) => {
+    const url = r.website_url ? `<a href="${escHtml(r.website_url)}" target="_blank" class="text-xs text-primary hover:underline">${escHtml(r.website_url)}</a>` : `<span class="text-xs text-muted-fg">—</span>`;
+    const summary = r.summary ? `<div class="text-sm mt-2 whitespace-pre-wrap">${escHtml(r.summary)}</div>` : `<div class="text-sm mt-2 text-muted-fg">No summary</div>`;
+    return `
+      <div class="rounded-xl border border-border/60 bg-card/60 p-3">
+        <div class="flex items-start justify-between gap-3">
+          <div class="min-w-0">
+            <div class="font-semibold truncate">${escHtml(r.name)}</div>
+            <div class="mt-1">${url}</div>
+          </div>
+          <div class="flex items-center gap-2 shrink-0">
+            <button type="button" data-comp-action="edit" data-comp-id="${escHtml(r.id)}"
+              class="h-9 px-3 rounded-xl border border-border/60 bg-bg/40 hover:bg-muted/40 transition text-sm font-semibold">Edit</button>
+            <button type="button" data-comp-action="delete" data-comp-id="${escHtml(r.id)}"
+              class="h-9 px-3 rounded-xl border border-border/60 bg-bg/40 hover:bg-muted/40 transition text-sm font-semibold text-danger">Delete</button>
+          </div>
+        </div>
+        ${summary}
+      </div>
+    `;
+  }).join('');
+}
+
+async function compLoad(clientId) {
+  compRenderSkeleton();
+  const res = await window.App.fetchJson(`/app/ajax/clients/${encodeURIComponent(clientId)}/competitors`);
+  if (!res?.ok) {
+    els.compList.innerHTML = `<div class="text-sm text-danger">Failed to load competitors</div>`;
+    return;
+  }
+  const rows = res.data.rows || [];
+  // local competitor cache
+  window.__compCache = new Map(rows.map((r) => [String(r.id), r]));
+  compRenderList(rows);
+}
+
+async function compSave() {
+  compClearErrors();
+  const clientId = els.compClientId.value;
+  if (!clientId) return;
+
+  compSetSaving(true);
+  const id = els.compId.value.trim();
+  const payload = {
+    name: els.compName.value.trim(),
+    website_url: els.compWebsite.value.trim() || null,
+    summary: els.compSummary.value.trim() || null,
+    notes: els.compNotes.value.trim() || null,
+  };
+
+  const url = id
+    ? `/app/ajax/competitors/${encodeURIComponent(id)}`
+    : `/app/ajax/clients/${encodeURIComponent(clientId)}/competitors`;
+  const method = id ? 'PATCH' : 'POST';
+  const res = await window.App.fetchJson(url, { method, body: JSON.stringify(payload) });
+  compSetSaving(false);
+
+  if (!res?.ok) {
+    if (res?.errors) compApplyErrors(res.errors);
+    window.App.toast(res?.message || 'Save failed', 'danger');
+    return;
+  }
+
+  window.App.toast(res?.message || 'Saved', 'success');
+  compResetForm();
+  await compLoad(clientId);
+  await load(); // refresh counts
+}
+
+async function compDelete(id) {
+  const ok = window.confirm('Delete this competitor?');
+  if (!ok) return;
+  const res = await window.App.fetchJson(`/app/ajax/competitors/${encodeURIComponent(id)}`, { method: 'DELETE' });
+  if (!res?.ok) {
+    window.App.toast(res?.message || 'Delete failed', 'danger');
+    return;
+  }
+  window.App.toast(res?.message || 'Deleted', 'success');
+  const clientId = els.compClientId.value;
+  if (clientId) {
+    await compLoad(clientId);
+    await load();
+  }
+}
+
 function bind() {
   els.search.addEventListener('input', debounce(() => {
     state.q = els.search.value.trim();
@@ -402,6 +570,14 @@ function bind() {
       openModal('clientNotesModal');
       loadNotes(id);
     }
+    if (action === 'competitors') {
+      const r = cache.get(String(id));
+      els.compClientId.value = String(id);
+      els.compHeader.textContent = r ? `${r.business_name} • ${r.email}` : '';
+      compResetForm();
+      openModal('clientCompetitorsModal');
+      compLoad(id);
+    }
   });
 
   els.noteForm.addEventListener('submit', (e) => {
@@ -409,6 +585,27 @@ function bind() {
     const clientId = els.notesClientId.value;
     if (!clientId) return;
     addNote(clientId);
+  });
+  els.compReset?.addEventListener('click', () => compResetForm());
+  els.compForm?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    compSave();
+  });
+
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('button[data-comp-action]');
+    if (!btn) return;
+    const action = btn.getAttribute('data-comp-action');
+    const id = btn.getAttribute('data-comp-id');
+    if (!id) return;
+    if (action === 'edit') {
+      const row = window.__compCache?.get(String(id));
+      if (row) compFillForm(row);
+      return;
+    }
+    if (action === 'delete') {
+      compDelete(id);
+    }
   });
 }
 

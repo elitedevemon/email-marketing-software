@@ -60,6 +60,7 @@
               <th class="px-4 py-3 font-semibold">Category</th>
               <th class="px-4 py-3 font-semibold">Status</th>
               <th class="px-4 py-3 font-semibold">Tags</th>
+              <th class="px-4 py-3 font-semibold">Competitors</th>
               <th class="px-4 py-3 font-semibold">Notes</th>
               <th class="px-4 py-3 text-right font-semibold">Actions</th>
             </tr>
@@ -221,6 +222,83 @@
           </button>
         </div>
       </form>
+    </div>
+  </x-ui.modal>
+
+  <x-ui.modal id="clientCompetitorsModal" title="Competitors">
+    <div class="space-y-4">
+      <input id="compClientId" type="hidden" value="">
+      <input id="compId" type="hidden" value="">
+
+      <div class="text-sm text-muted-fg" id="compHeader"></div>
+
+      <div class="rounded-2xl border border-border/60 bg-bg/40 p-3">
+        <div class="text-sm font-semibold">Competitors list</div>
+        <div class="mt-1 text-xs text-muted-fg">Insights are manual for now (auto website parsing later).
+        </div>
+        <div class="mt-3 max-h-[260px] space-y-3 overflow-auto pr-1" id="compList">
+          <!-- JS renders -->
+        </div>
+      </div>
+
+      <div class="rounded-2xl border border-border/60 bg-bg/40 p-3">
+        <div class="flex items-center justify-between">
+          <div class="text-sm font-semibold">Add / Edit competitor</div>
+          <button
+            class="h-9 rounded-xl border border-border/60 bg-card/60 px-3 text-sm font-semibold transition hover:bg-muted/40"
+            id="compReset" type="button">
+            Reset
+          </button>
+        </div>
+
+        <form class="mt-3 space-y-3" id="compForm">
+          <div class="grid gap-3 sm:grid-cols-2">
+            <div>
+              <label class="text-sm font-semibold">Name</label>
+              <input
+                class="mt-2 h-10 w-full rounded-xl border border-border/60 bg-card/60 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring/30"
+                id="compName" type="text">
+              <div class="mt-1 hidden text-xs text-danger" data-comp-err="name"></div>
+            </div>
+            <div>
+              <label class="text-sm font-semibold">Website URL</label>
+              <input
+                class="mt-2 h-10 w-full rounded-xl border border-border/60 bg-card/60 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring/30"
+                id="compWebsite" type="url" placeholder="https://competitor.com">
+              <div class="mt-1 hidden text-xs text-danger" data-comp-err="website_url"></div>
+            </div>
+          </div>
+
+          <div>
+            <label class="text-sm font-semibold">Insights summary</label>
+            <textarea
+              class="mt-2 w-full rounded-xl border border-border/60 bg-card/60 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring/30"
+              id="compSummary" rows="3" placeholder="What’s strong/weak about their website/offer?"></textarea>
+            <div class="mt-1 hidden text-xs text-danger" data-comp-err="summary"></div>
+          </div>
+
+          <div>
+            <label class="text-sm font-semibold">Internal notes</label>
+            <textarea
+              class="mt-2 w-full rounded-xl border border-border/60 bg-card/60 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring/30"
+              id="compNotes" rows="3" placeholder="Extra notes (pricing, CTA, tech, etc.)"></textarea>
+            <div class="mt-1 hidden text-xs text-danger" data-comp-err="notes"></div>
+          </div>
+
+          <div class="flex items-center justify-between">
+            <button
+              class="h-10 rounded-xl border border-border/60 bg-card/60 px-4 text-sm font-semibold transition hover:bg-muted/40"
+              data-modal-close type="button">
+              Close
+            </button>
+            <button
+              class="h-10 rounded-xl bg-primary px-4 text-sm font-semibold text-primary-fg transition hover:opacity-95"
+              id="compSave" type="submit">
+              Save competitor
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   </x-ui.modal>
 

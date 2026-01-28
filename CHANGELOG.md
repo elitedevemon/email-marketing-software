@@ -32,3 +32,14 @@
 - Added AJAX endpoints for clients CRUD
 - Added Notes modal: list notes + add note (AJAX)
 - Enabled sidebar Clients link
+
+## [Step 4] - Competitors per client + insights baseline
+- Added competitors table + Competitor model + Client->competitors relation
+- Added AJAX endpoints: list/store/update/delete competitors
+- Added Clients row action "Competitors" (modal-first CRUD)
+- Added competitors_count to Clients list response and table column
+
+## [Hotfix] - Documentation & assumptions hygiene
+- Added ASSUMPTIONS.md (status enum, tag normalization, delete rules, insights_json baseline)
+- Added docs/CRON_SECURITY.md (token, rate limit, idempotency, logs policy baseline)
+- Added docs/DELIVERABILITY.md (SPF/DKIM/DMARC guidance + hygiene + tracking limitations)

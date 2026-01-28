@@ -7,6 +7,7 @@ use App\Http\Controllers\App\CategoryController;
 use App\Http\Controllers\Ajax\CategoryAjaxController;
 use App\Http\Controllers\App\ClientController;
 use App\Http\Controllers\Ajax\ClientAjaxController;
+use App\Http\Controllers\Ajax\CompetitorAjaxController;
 
 Route::get('/', function () {
   return view('welcome');
@@ -46,6 +47,12 @@ Route::middleware(['auth', 'verified', 'role:admin|operator'])
     // Client notes
     Route::get('/clients/{client}/notes', [ClientAjaxController::class, 'notesIndex'])->name('clients.notes.index');
     Route::post('/clients/{client}/notes', [ClientAjaxController::class, 'notesStore'])->name('clients.notes.store');
+
+    // Competitors (per client)
+    Route::get('/clients/{client}/competitors', [CompetitorAjaxController::class, 'index'])->name('clients.competitors.index');
+    Route::post('/clients/{client}/competitors', [CompetitorAjaxController::class, 'store'])->name('clients.competitors.store');
+    Route::patch('/competitors/{competitor}', [CompetitorAjaxController::class, 'update'])->name('competitors.update');
+    Route::delete('/competitors/{competitor}', [CompetitorAjaxController::class, 'destroy'])->name('competitors.destroy');
   });
   });
 

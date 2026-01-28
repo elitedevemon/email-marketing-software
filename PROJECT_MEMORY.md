@@ -6,7 +6,9 @@
 - Hotfix applied: app-shell Blade component placed under resources/views/components/layouts to match <x-layouts.app-shell>.
 - Step 2 completed: Categories CRUD (AJAX list/search/filter/pagination + modal create/edit + delete).
 - Step 3 completed: Clients CRUD v1 (AJAX) + Tags (pivot) + Notes (AJAX modal).
-- Next: Proceed Step 4 (Competitors per client).
+- Step 4 completed: Competitors per client (AJAX CRUD via Clients page modal) + insights_json baseline.
+- Hotfix docs hygiene: Added ASSUMPTIONS.md + docs/CRON_SECURITY.md + docs/DELIVERABILITY.md to capture baselines.
+- Next: Proceed Step 5 (Sender accounts: SMTP/IMAP + encrypted secrets + limits/windows).
 
 ## Non‑negotiable tech rules (must comply)
 - Laravel 11 + Blade + Tailwind + Vanilla JS (fetch/XHR). No Vue/React/Livewire/Alpine/Inertia.
