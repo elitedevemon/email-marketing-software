@@ -43,3 +43,10 @@
 - Added ASSUMPTIONS.md (status enum, tag normalization, delete rules, insights_json baseline)
 - Added docs/CRON_SECURITY.md (token, rate limit, idempotency, logs policy baseline)
 - Added docs/DELIVERABILITY.md (SPF/DKIM/DMARC guidance + hygiene + tracking limitations)
+
+## [Step 5] - Senders + Queue baseline
+- Added senders table + Sender model (SMTP required, IMAP optional; password fields encrypted)
+- Added /app/senders page + AJAX CRUD
+- Added database queue tables: jobs, failed_jobs, job_batches
+- Added Failed Jobs UI: /app/queue/failed with view + retry + forget (admin-only actions)
+- Updated sidebar + quick actions to link Senders and Queue

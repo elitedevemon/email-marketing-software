@@ -3,7 +3,7 @@
       ['label' => 'Dashboard', 'href' => route('app.dashboard')],
       ['label' => 'Clients', 'href' => route('app.clients.index')],
       ['label' => 'Categories', 'href' => route('app.categories.index')],
-      ['label' => 'Senders', 'href' => '#', 'soon' => true],
+      ['label' => 'Senders', 'href' => route('app.senders.index')],
       ['label' => 'Templates', 'href' => '#', 'soon' => true],
       ['label' => 'Sequences', 'href' => '#', 'soon' => true],
       ['label' => 'Inbox', 'href' => '#', 'soon' => true],
@@ -35,9 +35,17 @@
           if ($item['label'] === 'Dashboard') {
               $isActive = request()->routeIs('app.dashboard');
           }
-          if ($item['label'] === 'Clients') $isActive = request()->routeIs('app.clients.*');
+          if ($item['label'] === 'Clients') {
+              $isActive = request()->routeIs('app.clients.*');
+          }
           if ($item['label'] === 'Categories') {
               $isActive = request()->routeIs('app.categories.*');
+          }
+          if ($item['label'] === 'Senders') {
+              $isActive = request()->routeIs('app.senders.*');
+          }
+          if ($item['label'] === 'Queue') {
+              $isActive = request()->routeIs('app.queue.*');
           }
           $base = 'flex items-center gap-3 rounded-xl px-3 py-2.5 transition';
           $active = 'bg-muted/60 text-fg';

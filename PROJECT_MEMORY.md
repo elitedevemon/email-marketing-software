@@ -8,7 +8,8 @@
 - Step 3 completed: Clients CRUD v1 (AJAX) + Tags (pivot) + Notes (AJAX modal).
 - Step 4 completed: Competitors per client (AJAX CRUD via Clients page modal) + insights_json baseline.
 - Hotfix docs hygiene: Added ASSUMPTIONS.md + docs/CRON_SECURITY.md + docs/DELIVERABILITY.md to capture baselines.
-- Next: Proceed Step 5 (Sender accounts: SMTP/IMAP + encrypted secrets + limits/windows).
+- Step 5 completed: Sender accounts CRUD (SMTP+optional IMAP, encrypted secrets, limits/windows) + database queue tables + Failed Jobs UI.
+- Next: Proceed Step 6 (Sequence engine v1: schedules + due sends + idempotency + secure cron trigger).
 
 ## Non‑negotiable tech rules (must comply)
 - Laravel 11 + Blade + Tailwind + Vanilla JS (fetch/XHR). No Vue/React/Livewire/Alpine/Inertia.

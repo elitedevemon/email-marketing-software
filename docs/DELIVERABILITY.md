@@ -30,6 +30,12 @@ third-party marketing APIs. Deliverability is **not guaranteed**, but we impleme
 > We will include a UI checklist later (per sender/domain) to confirm DNS is configured.
 
 ## Sending behavior (planned implementation)
+- Sender accounts store:
+  - SMTP credentials (required)
+  - IMAP credentials (optional for reply/bounce detection later)
+  - Per-sender daily limit
+  - Sending window + jitter
+- Credentials are stored encrypted at rest (password fields).
 - Per-sender daily limit (configurable)
 - Sending windows (avoid 24/7 blasting)
 - Random jitter to reduce bursty patterns

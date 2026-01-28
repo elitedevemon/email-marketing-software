@@ -26,6 +26,19 @@ so future steps remain consistent and production-safe.
 - Categories are user-managed (no pre-built auto-selection).
 - `categories` are currently **hard-deleted** (can be changed later if we need auditability).
 
+### Senders (SMTP/IMAP)
+- Sender accounts are stored in `senders`.
+- Sensitive fields are stored encrypted using Laravel encrypted casts:
+  - `smtp_password`, `imap_password`
+- Password edit behavior:
+  - Create: SMTP password required
+  - Edit: leaving password blank keeps the existing encrypted value
+- IMAP is optional for now (reply/bounce detection later). If `imap_host` is set, IMAP credentials must exist.
+- Sending policy baseline:
+  - `daily_limit` integer
+  - `window_start/window_end` time (timezone-aware via `timezone` column)
+  - jitter range in seconds (`jitter_min_seconds`..`jitter_max_seconds`)
+
 ### Competitors
 - Competitors are stored per client (0..n), currently **hard-deleted**.
 - `competitors.insights_json` baseline structure (manual capture for now):

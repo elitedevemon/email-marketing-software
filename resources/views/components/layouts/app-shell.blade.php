@@ -31,24 +31,23 @@
           <div class="font-semibold">Add Client</div>
           <div class="text-sm text-muted-fg">Create a new client (modal-first)</div>
         </button>
-        <button
-          class="rounded-xl border border-border bg-card px-4 py-3 text-left transition hover:bg-muted/40"
-          data-coming-soon="Add sender" type="button">
+        <a class="block rounded-xl border border-border bg-card px-4 py-3 text-left transition hover:bg-muted/40"
+          href="{{ route('app.senders.index') }}">
           <div class="font-semibold">Add Sender</div>
           <div class="text-sm text-muted-fg">Connect SMTP/IMAP credentials</div>
-        </button>
+        </a>
         <button
           class="rounded-xl border border-border bg-card px-4 py-3 text-left transition hover:bg-muted/40"
           data-coming-soon="Create template" type="button">
           <div class="font-semibold">Create Template</div>
           <div class="text-sm text-muted-fg">Start from blocks & versioning</div>
         </button>
-        <button
-          class="rounded-xl border border-border bg-card px-4 py-3 text-left transition hover:bg-muted/40"
-          data-coming-soon="View queue" type="button">
+        <a class="block rounded-xl border border-border bg-card px-4 py-3 text-left transition hover:bg-muted/40"
+          href="{{ route('app.queue.failed') }}">
           <div class="font-semibold">Queue / Jobs</div>
           <div class="text-sm text-muted-fg">Backlog, retries, failures</div>
-        </button>
+
+        </a>
       </div>
     </x-ui.modal>
     @stack('scripts')
