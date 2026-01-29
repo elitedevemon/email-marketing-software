@@ -11,9 +11,9 @@
 - Step 5 completed: Sender accounts CRUD (SMTP+optional IMAP, encrypted secrets, limits/windows) + database queue tables + Failed Jobs UI.
 - Hotfix UI: Made <x-ui.modal> scrollable (max-height + overflow-y-auto body).
 - Step 6 completed: Sequence engine v1 (sequences/steps/enrollments + outbox + send job) + secure cron endpoint (/cron/run) + scheduler wiring.
-- Step 7 completed: Unsubscribe + suppression enforcement + tracking scaffolding (open/click endpoints  events tables) + Suppression UI.
-- Step 7 completed: Unsubscribe + suppression enforcement + tracking scaffolding (open/click endpoints  events tables).
+- Step 7 completed: Unsubscribe + suppression enforcement + tracking scaffolding (open/click endpoints + events tables) + Suppression UI.
 - Step 8 completed: Outbound sending hardening (sender rotation + daily limits + sending window + jitter + per-domain throttling/backoff).
+- Step 9 completed: Send logs + atomic sending lock (double-send prevention) + Send Logs UI.
 
 ## Non‑negotiable tech rules (must comply)
 - Laravel 11 + Blade + Tailwind + Vanilla JS (fetch/XHR). No Vue/React/Livewire/Alpine/Inertia.
@@ -85,6 +85,10 @@ Planned tables:
 - Public tracking: /t/o/{uuid}.gif and /t/c/{uuid}/{hash}
 - Unsubscribe: signed URL (/u) -> adds to global suppression list
 - Cron endpoint: GET/POST /cron/run (token + rate limit + lock + logs)
+- Public tracking: /t/o/{uuid}.gif and /t/c/{uuid}/{hash}
+- Unsubscribe: signed URL (/u) -> adds to global suppression list
+- Cron endpoint: GET/POST /cron/run (token + rate limit + lock + logs)
+- Send logs: /app/sending/logs (AJAX: /app/ajax/sending/logs)
 
 ## JSON response shape (AJAX)
 Success:

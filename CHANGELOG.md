@@ -75,3 +75,10 @@
 - Added domain_throttle_states table for provider/domain throttling + backoff
 - Added retry-safe jitter (jitter_applied_at) to prevent bursts
 - Implemented sender round-robin selection (last_selected_at) + quota/window checks
+
+
+## [Step 9] - Send logs + atomic sending lock + Logs UI
+- Added email_send_logs table + EmailSendLog model (records each send attempt)
+- Added email_outbounds sending lock columns (sending_started_at, sending_lock_key)
+- Updated SendOutboundEmailJob with atomic DB lock to prevent double-send across workers
+- Added Send Logs page: /app/sending/logs + AJAX endpoint /app/ajax/sending/logs (search/filter/pagination + skeleton)

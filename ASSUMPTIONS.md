@@ -91,3 +91,8 @@ so future steps remain consistent and production-safe.
   - Open pixel: `/t/o/{uuid}.gif` (soft-dedupe by uuid+type+ip+day)
   - Click redirect: `/t/c/{uuid}/{hash}`; original URL stored in `outbound_links`.
 - Rendered content is stored in email_outbounds (`rendered_html`, `rendered_text`) after link rewrite + footer append.
+
+
+## Sending logs (Step 9)
+- Each SMTP attempt is recorded in email_send_logs with status: success|failed|skipped|retrying
+- email_outbounds uses a DB-level sending lock (sending_started_at + sending_lock_key) to avoid double-send

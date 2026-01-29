@@ -23,6 +23,8 @@ use App\Services\Sending\DomainClassifier;
 use App\Services\Sending\DomainThrottleService;
 use App\Services\Sending\SenderSelectionService;
 use App\Services\Sending\SendingWindowService;
+use App\Services\Sending\SendLogService;
+use Illuminate\Support\Str;
 use Throwable;
 
 class SendOutboundEmailJob implements ShouldQueue
@@ -181,6 +183,43 @@ class SendOutboundEmailJob implements ShouldQueue
       }
       ###########
 
+      ###########
+      $attempt = method_exists($this, 'attempts') ? $this->attempts() : 1;
+      $ctx = [
+        'email_outbound_id' => $o->id,
+        'outbound_uuid' => $o->uuid ?? null,
+        'client_id' => $o->client_id ?? null,
+        'sender_id' => $o->sender_id ?? null,
+        'to_email' => $o->to_email ?? ($o->client?->email),
+        'subject' => $o->subject ?? null,
+      ];
+
+      // ---- Atomic sending lock (prevents double-send across workers) ----
+      $lockKey = 'job:' . Str::uuid()->toString();
+      $locked = DB::table('email_outbounds')
+        ->where('id', $o->id)
+        ->whereNull('sent_at')
+        ->whereNull('skipped_at')
+        ->whereIn('status', ['queued', 'pending', 'sending']) // adjust to your enum
+        ->where(function ($q) {
+          $q->whereNull('sending_started_at')
+            ->orWhere('sending_started_at', '<', now()->subMinutes(10)); // stale lock safety
+        })
+        ->update([
+          'status' => 'sending',
+          'sending_started_at' => now(),
+          'sending_lock_key' => $lockKey,
+          'updated_at' => now(),
+        ]);
+
+      if ($locked !== 1) {
+        // Another worker already locked/sent it.
+        return;
+      }
+
+      $t0 = microtime(true);
+      ###########
+
       // Enforce daily limit (timezone-aware reset)
       $tz = $sender->timezone ?: 'Asia/Dhaka';
       $nowTz = Carbon::now($tz);
@@ -245,6 +284,11 @@ class SendOutboundEmailJob implements ShouldQueue
             ->where('date', now()->toDateString())
             ->increment('sent_count', 1, ['last_sent_at' => now()]);
         }
+
+        $ms = (int) round((microtime(true) - $t0) * 1000);
+        app(SendLogService::class)->success($ctx, $attempt, $ms, [
+          'lock_key' => $lockKey,
+        ]);
       } catch (Throwable $e) {
         // allow retry later via tick; rotate sender next time
         $o->status = 'pending';
@@ -260,6 +304,22 @@ class SendOutboundEmailJob implements ShouldQueue
 
         // Provider/domain backoff (helps prevent rapid repeated failures)
         app(DomainThrottleService::class)->penalize($group, $this->attempts());
+
+        $ms = (int) round((microtime(true) - $t0) * 1000);
+        app(SendLogService::class)->failed($ctx, $attempt, $e, $ms, [
+          'lock_key' => $lockKey,
+        ]);
+
+        // Release lock so retry can re-acquire (optional: only if you keep status=queued on fail)
+        DB::table('email_outbounds')
+          ->where('id', $o->id)
+          ->where('sending_lock_key', $lockKey)
+          ->update([
+            'sending_started_at' => null,
+            'sending_lock_key' => null,
+            'status' => 'queued', // adjust to your enum
+            'updated_at' => now(),
+          ]);
 
         throw $e; // let queue retry policy apply
       }

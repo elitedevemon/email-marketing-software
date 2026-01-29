@@ -8,6 +8,7 @@
       ['label' => 'Sequences', 'href' => '#', 'soon' => true],
       ['label' => 'Inbox', 'href' => '#', 'soon' => true],
       ['label' => 'Queue', 'href' => route('app.queue.failed')],
+      ['label' => 'Send Logs', 'href' => route('app.sending.logs')],
       ['label' => 'Reports', 'href' => '#', 'soon' => true],
       ['label' => 'Control Center', 'href' => '#', 'soon' => true],
   ];
@@ -47,6 +48,9 @@
           }
           if ($item['label'] === 'Queue') {
               $isActive = request()->routeIs('app.queue.*');
+          }
+          if ($item['label'] === 'Send Logs') {
+              $isActive = request()->routeIs('app.sending.logs');
           }
           $base = 'flex items-center gap-3 rounded-xl px-3 py-2.5 transition';
           $active = 'bg-muted/60 text-fg';

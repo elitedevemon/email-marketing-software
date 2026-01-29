@@ -17,6 +17,8 @@ use App\Http\Controllers\Public\UnsubscribeController;
 use App\Http\Controllers\Public\TrackingController;
 use App\Http\Controllers\App\SuppressionController;
 use App\Http\Controllers\Ajax\SuppressionAjaxController;
+use App\Http\Controllers\App\SendingLogController;
+use App\Http\Controllers\Ajax\SendingLogAjaxController;
 
 Route::get('/', function () {
   return view('welcome');
@@ -53,6 +55,9 @@ Route::middleware(['auth', 'verified', 'role:admin|operator'])
   ->name('app.')
   ->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+    Route::get('/sending/logs', [SendingLogController::class, 'index'])
+      ->name('sending.logs');
 
     // Categories (page)
     Route::get('/categories', [CategoryController::class, 'index'])->name('categories.index');
@@ -115,6 +120,9 @@ Route::middleware(['auth', 'verified', 'role:admin|operator'])
         ->name('app.ajax.suppression.store');
       Route::delete('/suppression/{suppressionEntry}', [SuppressionAjaxController::class, 'destroy'])
         ->name('app.ajax.suppression.destroy');
+
+      Route::get('/sending/logs', [SendingLogAjaxController::class, 'index'])
+        ->name('app.ajax.sending.logs');
     });
   });
 
