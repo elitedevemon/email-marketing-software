@@ -19,6 +19,9 @@ use App\Http\Controllers\App\SuppressionController;
 use App\Http\Controllers\Ajax\SuppressionAjaxController;
 use App\Http\Controllers\App\SendingLogController;
 use App\Http\Controllers\Ajax\SendingLogAjaxController;
+use App\Http\Controllers\App\TrackingEventsController;
+use App\Http\Controllers\Ajax\TrackingEventsAjaxController;
+use App\Http\Controllers\Ajax\TrackingWidgetsAjaxController;
 
 Route::get('/', function () {
   return view('welcome');
@@ -58,6 +61,9 @@ Route::middleware(['auth', 'verified', 'role:admin|operator'])
 
     Route::get('/sending/logs', [SendingLogController::class, 'index'])
       ->name('sending.logs');
+
+    Route::get('/tracking/events', [TrackingEventsController::class, 'index'])
+      ->name('tracking.events');
 
     // Categories (page)
     Route::get('/categories', [CategoryController::class, 'index'])->name('categories.index');
@@ -115,14 +121,25 @@ Route::middleware(['auth', 'verified', 'role:admin|operator'])
         ->name('failed-jobs.forget');
 
       Route::get('/suppression', [SuppressionAjaxController::class, 'index'])
-        ->name('app.ajax.suppression.index');
+        ->name('ajax.suppression.index');
       Route::post('/suppression', [SuppressionAjaxController::class, 'store'])
-        ->name('app.ajax.suppression.store');
+        ->name('ajax.suppression.store');
       Route::delete('/suppression/{suppressionEntry}', [SuppressionAjaxController::class, 'destroy'])
-        ->name('app.ajax.suppression.destroy');
+        ->name('ajax.suppression.destroy');
 
       Route::get('/sending/logs', [SendingLogAjaxController::class, 'index'])
-        ->name('app.ajax.sending.logs');
+        ->name('ajax.sending.logs');
+
+      Route::get('/tracking/events', [TrackingEventsAjaxController::class, 'index'])
+        ->name('ajax.tracking.events');
+      Route::get('/tracking/outbound/{uuid}', [TrackingEventsAjaxController::class, 'outbound'])
+        ->name('ajax.tracking.outbound');
+
+      // Dashboard widgets
+      Route::get('/widgets/tracking/trend', [TrackingWidgetsAjaxController::class, 'trend'])
+        ->name('ajax.widgets.tracking.trend');
+      Route::get('/widgets/tracking/top-links', [TrackingWidgetsAjaxController::class, 'topLinks'])
+        ->name('ajax.widgets.tracking.topLinks');
     });
   });
 

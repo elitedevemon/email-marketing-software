@@ -25,6 +25,48 @@
     @endforeach
   </div>
 
+  <div class="grid grid-cols-1 gap-4 xl:grid-cols-2">
+    <div class="rounded-xl border border-[var(--border)] bg-[var(--surface-1)] p-4">
+      <div class="flex items-center justify-between">
+        <div>
+          <div class="text-sm font-semibold text-[var(--text-1)]">Opens vs Clicks</div>
+          <div class="text-xs text-[var(--text-2)]">Last 30 days</div>
+        </div>
+        <button
+          class="rounded-lg border border-[var(--border)] px-3 py-1.5 text-sm hover:bg-[var(--surface-2)]"
+          id="btnReloadTrend">Reload</button>
+      </div>
+      <div class="mt-3">
+        <canvas id="chartTrend" height="120"></canvas>
+      </div>
+    </div>
+
+    <div class="rounded-xl border border-[var(--border)] bg-[var(--surface-1)] p-4">
+      <div class="flex items-center justify-between">
+        <div>
+          <div class="text-sm font-semibold text-[var(--text-1)]">Top clicked links</div>
+          <div class="text-xs text-[var(--text-2)]">Last 30 days</div>
+        </div>
+        <button
+          class="rounded-lg border border-[var(--border)] px-3 py-1.5 text-sm hover:bg-[var(--surface-2)]"
+          id="btnReloadLinks">Reload</button>
+      </div>
+      <div class="mt-3 overflow-x-auto">
+        <table class="min-w-full text-sm">
+          <thead class="text-[var(--text-2)]">
+            <tr>
+              <th class="py-2 pr-3 text-left font-medium">URL</th>
+              <th class="py-2 text-right font-medium">Clicks</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-[var(--border)]" id="topLinksRows"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  @vite(['resources/js/widgets/tracking-widgets.js'])
+
   <div class="mt-6 grid gap-4 lg:grid-cols-3">
     <div class="rounded-2xl border border-border/60 bg-card/60 p-4 lg:col-span-2">
       <div class="flex items-center justify-between">
