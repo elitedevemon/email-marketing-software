@@ -6,7 +6,7 @@ but in production many users run it using an external cron website / uptime serv
 This document defines the security requirements and the **implemented cron endpoint**.
 
 ## Implemented endpoint (Step 6)
-**GET `/cron/run`**
+**GET/POST `/cron/run`**
 - Triggers: `php artisan schedule:run` (which runs `sequence:tick` every minute)
 - Auth:
   - Preferred header: `Authorization: Bearer <CRON_TOKEN>`
@@ -93,3 +93,6 @@ We will add:
 
 ## Status (as of now)
 Cron endpoint is **not implemented yet**. This doc is the policy baseline.
+
+## Status (as of now)
+Cron endpoint is **implemented** (/cron/run) with token + throttle + lock + DB logging.

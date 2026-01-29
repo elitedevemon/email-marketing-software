@@ -18,6 +18,11 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use App\Services\SuppressionService;
 use App\Services\Tracking\OutboundTrackingService;
+use App\Models\SenderDailyCounter;
+use App\Services\Sending\DomainClassifier;
+use App\Services\Sending\DomainThrottleService;
+use App\Services\Sending\SenderSelectionService;
+use App\Services\Sending\SendingWindowService;
 use Throwable;
 
 class SendOutboundEmailJob implements ShouldQueue
@@ -26,6 +31,12 @@ class SendOutboundEmailJob implements ShouldQueue
 
   public function __construct(public int $outboundId)
   {
+  }
+
+  public function backoff(): array
+  {
+    // Retry schedule (seconds) - keeps bursts under control
+    return [30, 90, 180, 300, 600];
   }
 
   public function handle(): void
@@ -87,6 +98,89 @@ class SendOutboundEmailJob implements ShouldQueue
       $o->rendered_text = $text ?: null;
       $o->save();
 
+      ###########
+      // Determine recipient email (adjust field names as per your schema)
+      $toEmail = $o->to_email ?? $o->client?->email;
+      if (!$toEmail) {
+        // mark failed/skip as per your existing pattern
+        $o->status = 'failed';
+        $o->save();
+        return;
+      }
+
+      // 1) Enforce sending window (prefer sender-specific later; if sender not set yet use global)
+      $windowStart = $o->sender?->window_start ?? null;
+      $windowEnd = $o->sender?->window_end ?? null;
+      $tz = $o->sender?->timezone ?? null;
+      [$allowed, $delayToWindow] = app(SendingWindowService::class)->check($windowStart, $windowEnd, $tz);
+      if (!$allowed) {
+        $this->release($delayToWindow);
+        return;
+      }
+
+      // 2) Apply jitter ONCE (retry-safe)
+      if (empty($o->jitter_applied_at)) {
+        $min = (int) ($o->sender?->jitter_min_seconds ?? config('sending.jitter.min', 15));
+        $max = (int) ($o->sender?->jitter_max_seconds ?? config('sending.jitter.max', 180));
+        $min = max(0, min($min, $max));
+        $max = max($min, $max);
+        $jitter = $max > 0 ? random_int($min, $max) : 0;
+
+        $o->jitter_applied_at = now();
+        $o->save();
+
+        if ($jitter > 0) {
+          $this->release($jitter);
+          return;
+        }
+      }
+
+      // 3) Sender rotation + quota enforcement (if sender missing or not eligible)
+      $sender = $o->sender;
+      $needsNewSender = !$sender || (bool) ($sender->is_paused ?? false);
+      if ($needsNewSender) {
+        $sender = app(SenderSelectionService::class)->selectEligibleSender();
+        if (!$sender) {
+          // no sender available now -> retry later
+          $this->release(300);
+          return;
+        }
+        $o->sender_id = $sender->id;
+        $o->save();
+      }
+
+      // 4) Daily limit enforcement (hard)
+      $limit = (int) ($sender->daily_limit ?? 0);
+      if ($limit > 0) {
+        $counter = SenderDailyCounter::query()
+          ->firstOrCreate(
+            ['sender_id' => $sender->id, 'date' => now()->toDateString()],
+            ['sent_count' => 0],
+          );
+        if ((int) $counter->sent_count >= $limit) {
+          // try rotate once more
+          $alt = app(SenderSelectionService::class)->selectEligibleSender();
+          if ($alt && $alt->id !== $sender->id) {
+            $o->sender_id = $alt->id;
+            $o->save();
+            $this->release(5);
+            return;
+          }
+          // wait until tomorrow (simple) - next tick will catch it
+          $this->release(3600);
+          return;
+        }
+      }
+
+      // 5) Per-domain throttling + reservation
+      $group = app(DomainClassifier::class)->groupForEmail($toEmail);
+      $delay = app(DomainThrottleService::class)->reserveOrDelay($group);
+      if ($delay > 0) {
+        $this->release($delay);
+        return;
+      }
+      ###########
+
       // Enforce daily limit (timezone-aware reset)
       $tz = $sender->timezone ?: 'Asia/Dhaka';
       $nowTz = Carbon::now($tz);
@@ -143,6 +237,14 @@ class SendOutboundEmailJob implements ShouldQueue
         $sender->save();
 
         $this->advanceEnrollmentAfterSend($o->sequence_enrollment_id, $o->sent_at);
+
+        // After successful send: increment daily counter
+        if ($limit > 0) {
+          SenderDailyCounter::query()
+            ->where('sender_id', $sender->id)
+            ->where('date', now()->toDateString())
+            ->increment('sent_count', 1, ['last_sent_at' => now()]);
+        }
       } catch (Throwable $e) {
         // allow retry later via tick; rotate sender next time
         $o->status = 'pending';
@@ -155,6 +257,9 @@ class SendOutboundEmailJob implements ShouldQueue
           $enr->next_run_at = now()->addMinutes(10); // backoff
           $enr->save();
         }
+
+        // Provider/domain backoff (helps prevent rapid repeated failures)
+        app(DomainThrottleService::class)->penalize($group, $this->attempts());
 
         throw $e; // let queue retry policy apply
       }

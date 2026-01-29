@@ -78,3 +78,16 @@ so future steps remain consistent and production-safe.
 - Suppression list + unsubscribe enforcement
 - Queue dashboard + failed jobs UI
 - Tracking (open/click/reply/bounce via IMAP) + automation engine
+- IMAP inbound fetch (replies + bounces) + suppression from DSN parsing
+- Inbox/Conversations UI + auto-stop on reply
+- Dashboard widgets/reports + exports
+- Admin control center (pause sending, cron health, queue backlog)
+
+## Suppression + Unsubscribe + Tracking (Step 7)
+- Global suppression is stored in `suppression_entries` (unique by email).
+- Unsubscribe is a **signed URL** at `/u` with encrypted email token param `t`.
+- Enforcement occurs at send-time (SendOutboundEmailJob) and tick-time (sequence:tick): suppressed emails must never be sent.
+- Tracking v1:
+  - Open pixel: `/t/o/{uuid}.gif` (soft-dedupe by uuid+type+ip+day)
+  - Click redirect: `/t/c/{uuid}/{hash}`; original URL stored in `outbound_links`.
+- Rendered content is stored in email_outbounds (`rendered_html`, `rendered_text`) after link rewrite + footer append.

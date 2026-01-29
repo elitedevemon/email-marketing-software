@@ -9,6 +9,11 @@ third-party marketing APIs. Deliverability is **not guaranteed**, but we impleme
 - Honest identity + footer + physical/business address placeholders.
 - Consent-based sending is strongly recommended.
 
+## App behavior (implemented)
+- Every outbound email includes an unsubscribe link (signed URL) which adds the recipient to the global suppression list.
+- Suppressed emails are blocked at send-time (hard stop).
+- Open tracking is pixel-based and not fully accurate; click tracking uses redirect mapping.
+
 ## DNS configuration (SPF / DKIM / DMARC)
 
 ### SPF
@@ -29,7 +34,7 @@ third-party marketing APIs. Deliverability is **not guaranteed**, but we impleme
 
 > We will include a UI checklist later (per sender/domain) to confirm DNS is configured.
 
-## Sending behavior (planned implementation)
+## Sending behavior (implemented baseline)
 - Sender accounts store:
   - SMTP credentials (required)
   - IMAP credentials (optional for reply/bounce detection later)
@@ -67,5 +72,5 @@ third-party marketing APIs. Deliverability is **not guaranteed**, but we impleme
 - Include clear CTA, but avoid aggressive urgency patterns.
 
 ## Status (as of now)
-Deliverability controls are **partially documented** here; the actual sending/rotation/throttle engine
-will be implemented starting Step 5+.
+Rotation, daily limits, sending windows, jitter, and domain throttling/backoff are implemented.
+IMAP-based replies/bounces are planned next.

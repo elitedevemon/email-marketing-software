@@ -11,7 +11,9 @@
 - Step 5 completed: Sender accounts CRUD (SMTP+optional IMAP, encrypted secrets, limits/windows) + database queue tables + Failed Jobs UI.
 - Hotfix UI: Made <x-ui.modal> scrollable (max-height + overflow-y-auto body).
 - Step 6 completed: Sequence engine v1 (sequences/steps/enrollments + outbox + send job) + secure cron endpoint (/cron/run) + scheduler wiring.
-- Next: Proceed Step 7 (Unsubscribe + suppression enforcement + tracking scaffolding: open/click events tables).
+- Step 7 completed: Unsubscribe + suppression enforcement + tracking scaffolding (open/click endpoints  events tables) + Suppression UI.
+- Step 7 completed: Unsubscribe + suppression enforcement + tracking scaffolding (open/click endpoints  events tables).
+- Step 8 completed: Outbound sending hardening (sender rotation + daily limits + sending window + jitter + per-domain throttling/backoff).
 
 ## Non‑negotiable tech rules (must comply)
 - Laravel 11 + Blade + Tailwind + Vanilla JS (fetch/XHR). No Vue/React/Livewire/Alpine/Inertia.
@@ -80,6 +82,9 @@ Planned tables:
 - Public tracking: /t/o/{uuid}.gif and /t/c/{uuid}/{hash}
 - Unsubscribe: signed URL (global suppression)
 - Cron endpoint: POST /cron/schedule/run (token + rate limit + logs)
+- Public tracking: /t/o/{uuid}.gif and /t/c/{uuid}/{hash}
+- Unsubscribe: signed URL (/u) -> adds to global suppression list
+- Cron endpoint: GET/POST /cron/run (token + rate limit + lock + logs)
 
 ## JSON response shape (AJAX)
 Success:
@@ -99,7 +104,11 @@ Server error:
 ## Scheduler/Cron baseline
 - Scheduling configured in routes/console.php (Laravel 11 style).
 - External cron hits secure endpoint -> calls schedule:run.
-- Idempotency ensured at DB level via outbound_messages.uuid unique + atomic state transitions.
+ Idempotency ensured at DB level via outbound_messages.uuid unique + atomic state transitions.
+ - Sending controls:
+   - Sender selection is round-robin via last_selected_at
+   - Daily limits enforced via sender_daily_counters
+   - Provider/domain throttles enforced via domain_throttle_states
 
 ## Stop & Resume instructions
 If you start a new chat:

@@ -62,3 +62,16 @@
 - Added SendOutboundEmailJob (dynamic SMTP per sender)
 - Added /cron/run endpoint with token auth + throttle + lock + cron_runs logging
 - Auto-enroll new prospect clients into default_outreach sequence (seeded)
+
+## [Step 7] - Unsubscribe + Suppression + Tracking v1
+- Added suppression_entries + unsubscribe_events (global do-not-contact)
+- Added signed unsubscribe endpoint (/u) and confirmation page
+- Added tracking endpoints: open pixel (/t/o/{uuid}.gif) + click redirect (/t/c/{uuid}/{hash})
+- Added outbound_links mapping + email_events table
+- Enforced suppression at send-time (skip)
+
+## [Step 8] - Outbound sending hardening (rotation/limits/window/throttle)
+- Added sender_daily_counters table for per-sender daily limits
+- Added domain_throttle_states table for provider/domain throttling + backoff
+- Added retry-safe jitter (jitter_applied_at) to prevent bursts
+- Implemented sender round-robin selection (last_selected_at) + quota/window checks
