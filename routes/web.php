@@ -13,10 +13,30 @@ use App\Http\Controllers\App\FailedJobsController;
 use App\Http\Controllers\Ajax\SenderAjaxController;
 use App\Http\Controllers\Ajax\FailedJobsAjaxController;
 use App\Http\Controllers\Cron\CronRunController;
+use App\Http\Controllers\Public\UnsubscribeController;
+use App\Http\Controllers\Public\TrackingController;
+use App\Http\Controllers\App\SuppressionController;
+use App\Http\Controllers\Ajax\SuppressionAjaxController;
 
 Route::get('/', function () {
   return view('welcome');
 });
+
+// ----------------------------
+// Public: Unsubscribe + Tracking
+// ----------------------------
+Route::get('/u', UnsubscribeController::class)
+  ->name('public.unsubscribe')
+  ->middleware(['signed', 'throttle:60,1']);
+
+Route::get('/t/o/{uuid}.gif', [TrackingController::class, 'open'])
+  ->name('public.track.open')
+  ->middleware(['throttle:240,1']);
+
+Route::get('/t/c/{uuid}/{hash}', [TrackingController::class, 'click'])
+  ->name('public.track.click')
+  ->middleware(['throttle:240,1']);
+
 
 // Secure cron trigger (external cron websites)
 Route::get('/cron/run', [CronRunController::class, 'run'])
@@ -45,6 +65,9 @@ Route::middleware(['auth', 'verified', 'role:admin|operator'])
 
     // Queue / Failed jobs (page)
     Route::get('/queue/failed', [FailedJobsController::class, 'index'])->name('queue.failed');
+
+    Route::get('/suppression', [SuppressionController::class, 'index'])
+      ->name('app.suppression.index');
 
     // AJAX (JSON)
     Route::prefix('ajax')->name('ajax.')->group(function () {
@@ -85,6 +108,13 @@ Route::middleware(['auth', 'verified', 'role:admin|operator'])
       Route::delete('/failed-jobs/{id}', [FailedJobsAjaxController::class, 'forget'])
         ->middleware('role:admin')
         ->name('failed-jobs.forget');
+
+      Route::get('/suppression', [SuppressionAjaxController::class, 'index'])
+        ->name('app.ajax.suppression.index');
+      Route::post('/suppression', [SuppressionAjaxController::class, 'store'])
+        ->name('app.ajax.suppression.store');
+      Route::delete('/suppression/{suppressionEntry}', [SuppressionAjaxController::class, 'destroy'])
+        ->name('app.ajax.suppression.destroy');
     });
   });
 

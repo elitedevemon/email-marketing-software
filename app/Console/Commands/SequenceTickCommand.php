@@ -4,9 +4,11 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use App\Services\SequenceEngine;
+use App\Services\SuppressionService;
 
 class SequenceTickCommand extends Command
 {
+  
   /**
    * The name and signature of the console command.
    *
@@ -26,6 +28,7 @@ class SequenceTickCommand extends Command
    */
   public function handle(SequenceEngine $engine): int
   {
+    $suppression = app(SuppressionService::class);
     $limit = (int) $this->option('limit');
     $dry = (bool) $this->option('dry-run');
 
@@ -38,6 +41,8 @@ class SequenceTickCommand extends Command
       $m['pending'],
       $m['skipped'],
     ));
+
+    
 
     return self::SUCCESS;
   }

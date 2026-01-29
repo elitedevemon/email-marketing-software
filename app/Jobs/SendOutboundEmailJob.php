@@ -16,6 +16,8 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
+use App\Services\SuppressionService;
+use App\Services\Tracking\OutboundTrackingService;
 use Throwable;
 
 class SendOutboundEmailJob implements ShouldQueue
@@ -55,6 +57,35 @@ class SendOutboundEmailJob implements ShouldQueue
         $o->save();
         return;
       }
+
+      // Global suppression enforcement (hard stop)
+      $suppression = app(SuppressionService::class);
+      if ($suppression->isSuppressed($o->to_email ?? $o->client?->email)) {
+        $o->status = 'skipped';
+        $o->skipped_at = now();
+        $o->skip_reason = 'suppressed';
+        $o->save();
+        return;
+      }
+      // Compose: add unsubscribe + tracking (HTML + text)
+      $unsubscribeUrl = $suppression->makeSignedUnsubscribeUrl(
+        $o->to_email ?? $o->client?->email,
+        $o->client_id ?? null,
+        $o->uuid ?? null
+      );
+
+      $tracking = app(OutboundTrackingService::class);
+      $html = $o->html_body ?? $o->body_html ?? '';
+      $text = $o->text_body ?? $o->body_text ?? '';
+      if ($html)
+        $html = $tracking->applyToHtml($html, $o->uuid, $unsubscribeUrl);
+      if ($text)
+        $text = $tracking->applyToText($text, $unsubscribeUrl);
+
+      // persist rendered content for audit/debug
+      $o->rendered_html = $html ?: null;
+      $o->rendered_text = $text ?: null;
+      $o->save();
 
       // Enforce daily limit (timezone-aware reset)
       $tz = $sender->timezone ?: 'Asia/Dhaka';
